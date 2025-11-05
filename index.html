@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가족 디지털 윤리 OX 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #FFFBEB; }
+        .bg-primary { background-color: #F2CB05; }
+        .text-accent { color: #F24405; }
+        .text-contrast { color: #035E7B; }
+        .card { background-color: #ffffff; border-radius: 1rem; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); }
+        .btn-o { background-color: #035E7B; color: white; }
+        .btn-x { background-color: #F24405; color: white; }
+        .btn-o:hover { background-color: #024a61; }
+        .btn-x:hover { background-color: #c03603; }
+        .btn-base { font-weight: bold; padding: 1rem; border-radius: 0.75rem; transition: transform 0.1s; width: 48%; }
+        .btn-base:active { transform: scale(0.98); }
+        .answer-box { border-radius: 0.75rem; padding: 1rem; margin-top: 1rem; font-size: 0.95rem; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div id="app" class="max-w-xl mx-auto">
+        <header class="text-center mb-8 py-4 bg-primary rounded-lg shadow-md">
+            <h1 class="text-2xl md:text-3xl font-black text-contrast">
+                👨‍👩‍👧‍👦 우리 가족 디지털 윤리 OX 퀴즈!
+            </h1>
+            <p class="text-sm md:text-base text-contrast mt-1">아이와 함께 규칙을 확인하고 대화 나눠 보세요.</p>
+        </header>
+
+        <section id="quiz-section" class="card p-6">
+            <div id="question-index" class="text-lg font-bold text-accent mb-2"></div>
+            
+            <div id="question-card" class="bg-yellow-50 p-6 rounded-lg mb-6 border-l-4 border-primary">
+                <p id="question-text" class="text-xl font-bold text-contrast leading-relaxed"></p>
+                <div id="difficulty-level" class="text-sm mt-3 font-medium text-gray-500"></div>
+            </div>
+
+            <div id="button-container" class="flex justify-between space-x-4">
+                <button onclick="checkAnswer(true)" class="btn-base btn-o">
+                    <span class="text-2xl font-black">O</span> (맞아요!)
+                </button>
+                <button onclick="checkAnswer(false)" class="btn-base btn-x">
+                    <span class="text-2xl font-black">X</span> (틀려요!)
+                </button>
+            </div>
+
+            <!-- 결과 및 해설 표시 영역 -->
+            <div id="feedback-area" class="mt-6 hidden">
+                <div id="answer-result" class="text-xl font-black text-center mb-3"></div>
+                <div id="explanation-box" class="answer-box">
+                    <p class="font-bold text-accent mb-1">💡 왜 그럴까요?</p>
+                    <p id="explanation-text" class="text-gray-700"></p>
+                    <p class="mt-3 text-sm text-gray-500 font-medium">아이와 함께 이 내용을 읽고 이야기 나눠 보세요!</p>
+                </div>
+                <button onclick="nextQuestion()" id="next-button" class="mt-4 w-full py-3 bg-primary text-contrast font-bold rounded-lg shadow-md">
+                    다음 문제로 →
+                </button>
+            </div>
+        </section>
+        
+        <!-- 결과 화면 (마지막 문제 후 표시) -->
+        <section id="result-section" class="card p-6 text-center hidden">
+            <h2 class="text-2xl font-black text-contrast mb-4">🎉 가족 미션 완료!</h2>
+            <p class="text-lg text-gray-700 mb-2">총 <span id="total-questions" class="text-accent font-black"></span>문제 중</p>
+            <p class="text-4xl font-black text-primary mb-6"><span id="correct-count"></span>점</p>
+            <p class="text-md text-gray-700">우리 아이와 함께 **'디지털 약속 액자'**를 다시 한번 확인하고, 매일매일 실천하는 **'디지털 수호대'**가 되어 주세요!</p>
+            <button onclick="restartQuiz()" class="mt-6 w-full py-3 bg-primary text-contrast font-bold rounded-lg shadow-md">
+                처음부터 다시 시작하기
+            </button>
+        </section>
+
+    </div>
+
+    <script>
+        const questions = [
+            // 난이도 하 (쉬운 습관)
+            { q: "스마트폰을 볼 때는 바른 자세로 앉아서 보는 것이 맞다.", a: true, exp: "바른 자세는 우리 몸과 눈 건강을 지키는 가장 쉬운 약속이에요. 누워서 보거나 엎드려서 보면 안 돼요.", level: "하" },
+            { q: "밥을 먹을 때도 재미있는 유튜브 영상을 틀어놓고 보는 것이 괜찮다.", a: false, exp: "밥 먹을 때 영상에 집중하면 소화도 잘 안되고, 가족들과 이야기 나눌 시간도 줄어들어요. 밥 먹을 때는 식사 약속을 지켜요.", level: "하" },
+            { q: "눈과의 거리는 30cm보다 가까이 두어야 화면이 더 잘 보인다.", a: false, exp: "화면을 너무 가까이 보면 눈이 쉽게 피로해지고 나빠져요. 팔을 쭉 뻗은 거리(30cm)를 꼭 지켜주세요.", level: "하" },
+            
+            // 난이도 중 (배려, 조절, 안전 기초)
+            { q: "선생님이나 부모님께 허락받지 않은 기기를 혼자 만져도 괜찮다.", a: false, exp: "디지털 기기를 사용할 때는 꼭 어른께 '써도 될까요?' 하고 허락을 받아야 해요. 이는 안전과 기기 보호의 첫걸음입니다.", level: "중" },
+            { q: "친구와 함께 영상을 볼 때는 소리를 아주 크게 키워야 재미있다.", a: false, exp: "나만 듣는 것이 아니라면 소리를 줄여서 다른 사람들에게 피해를 주지 않도록 배려해야 해요. 이것이 공공장소 예절입니다.", level: "중" },
+            { q: "기기를 사용하다가 모르는 이상한 화면이 나오면 혼자 해결해야 한다.", a: false, exp: "모르는 화면이나 이상한 내용이 나오면 바로 부모님께 '도와주세요'라고 말해야 합니다. 혼자 해결하려고 하면 위험할 수 있어요.", level: "중" },
+            { q: "기기 가까이에 음료수나 물을 기기 가까이 두어도 괜찮다.", a: false, exp: "기기는 물에 닿으면 고장 나거나 안전사고가 날 수 있어요. 음료수는 멀리 두고 사용해야 합니다.", level: "중" },
+
+            // 난이도 상 (권리, 정보보호, 책임)
+            { q: "다른 사람의 재미있는 사진을 허락 없이 찍거나 온라인에 올려도 괜찮다.", a: false, exp: "다른 사람의 사진이나 영상은 '초상권'이라는 중요한 권리예요. 반드시 사진 주인에게 '올려도 될까요?' 하고 허락을 받아야 합니다.", level: "상" },
+            { q: "나쁜 말을 쓰는 친구 댓글을 봤다면 나도 똑같이 나쁜 댓글을 달아준다.", a: false, exp: "디지털 세상에서도 예쁜 말을 써야 해요. 나쁜 댓글을 보면 똑같이 따라 하지 말고, 그만두라고 말하거나 어른에게 도움을 요청해야 합니다.", level: "상" },
+            { q: "비밀번호나 우리 집 주소 같은 개인정보는 낯선 사람에게도 말해 줄 수 있다.", a: false, exp: "비밀번호나 개인 정보는 우리 가족을 지켜주는 중요한 비밀이에요. 절대 낯선 사람이나 온라인에서 만난 사람에게 알려주면 안 됩니다.", level: "상" }
+        ];
+
+        let currentQuestionIndex = 0;
+        let correctCount = 0;
+        let quizActive = true;
+
+        const qIndexEl = document.getElementById('question-index');
+        const qTextEl = document.getElementById('question-text');
+        const difficultyEl = document.getElementById('difficulty-level');
+        const buttonContainerEl = document.getElementById('button-container');
+        const feedbackAreaEl = document.getElementById('feedback-area');
+        const resultEl = document.getElementById('answer-result');
+        const explanationEl = document.getElementById('explanation-text');
+        const resultSectionEl = document.getElementById('result-section');
+        const quizSectionEl = document.getElementById('quiz-section');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const correctCountEl = document.getElementById('correct-count');
+        const nextButtonEl = document.getElementById('next-button');
+
+        function initializeQuiz() {
+            currentQuestionIndex = 0;
+            correctCount = 0;
+            quizActive = true;
+            quizSectionEl.classList.remove('hidden');
+            resultSectionEl.classList.add('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                showResults();
+                return;
+            }
+
+            const q = questions[currentQuestionIndex];
+            
+            qIndexEl.textContent = `Q.${currentQuestionIndex + 1}`;
+            qTextEl.textContent = q.q;
+            
+            let levelColor = '';
+            let levelText = '';
+            if (q.level === '하') {
+                levelColor = 'bg-green-100 text-green-700';
+                levelText = '난이도: 쉬움 (생활 습관)';
+            } else if (q.level === '중') {
+                levelColor = 'bg-yellow-100 text-yellow-700';
+                levelText = '난이도: 보통 (배려와 안전)';
+            } else if (q.level === '상') {
+                levelColor = 'bg-red-100 text-red-700';
+                levelText = '난이도: 어려움 (권리와 책임)';
+            }
+            difficultyEl.className = `text-sm mt-3 font-medium ${levelColor} inline-block px-3 py-1 rounded-full`;
+            difficultyEl.textContent = levelText;
+            
+            buttonContainerEl.classList.remove('hidden');
+            feedbackAreaEl.classList.add('hidden');
+            quizActive = true;
+
+            // 다음 버튼 텍스트 업데이트
+            if (currentQuestionIndex === questions.length - 1) {
+                nextButtonEl.textContent = '결과 확인하기 🎉';
+            } else {
+                nextButtonEl.textContent = '다음 문제로 →';
+            }
+        }
+
+        function checkAnswer(userAnswer) {
+            if (!quizActive) return;
+            quizActive = false;
+
+            const q = questions[currentQuestionIndex];
+            const isCorrect = (userAnswer === q.a);
+            
+            if (isCorrect) {
+                correctCount++;
+                resultEl.innerHTML = '정답입니다! 👍';
+                resultEl.classList.remove('text-accent');
+                resultEl.classList.add('text-green-600');
+                explanationEl.parentElement.style.backgroundColor = '#E6FFFA'; // Green-like background
+                explanationEl.parentElement.style.borderColor = '#38A169'; // Green border
+            } else {
+                resultEl.innerHTML = '앗! 다시 생각해 볼까요? 😟';
+                resultEl.classList.remove('text-green-600');
+                resultEl.classList.add('text-accent');
+                explanationEl.parentElement.style.backgroundColor = '#FFF0F5'; // Pink-like background
+                explanationEl.parentElement.style.borderColor = '#F687B3'; // Pink border
+            }
+
+            explanationEl.textContent = q.exp;
+            
+            buttonContainerEl.classList.add('hidden');
+            feedbackAreaEl.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            quizSectionEl.classList.add('hidden');
+            resultSectionEl.classList.remove('hidden');
+            totalQuestionsEl.textContent = questions.length;
+            correctCountEl.textContent = correctCount;
+        }
+
+        function restartQuiz() {
+            initializeQuiz();
+        }
+
+        // 초기 시작
+        initializeQuiz();
+    </script>
